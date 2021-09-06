@@ -27,7 +27,7 @@ void test_token_buffer() {
 
 void test_single_token() {
     token_buffer *tb;
-
+    
     tb = scan("\"abc\"");
     assert(tb -> buffer[0].tag == TOKEN_STRING);
 
@@ -75,6 +75,16 @@ void test_full_scan() {
     tb = scan("(abc #t (\"123\" (0.25 #f ())))");
 }
 
+void test_parse() {
+    token_buffer *tb;
+    expr *e;
+
+    tb = scan("( 123 abc #t () \"one two three\" )");
+    e = parse_expr(tb);
+    print_expr(e);
+    printf("\n");
+}
+
 void test_parse_atom() {
     token_buffer *tb;
     expr *e;
@@ -115,4 +125,6 @@ int main() {
     TEST(test_full_scan);
 
     TEST(test_parse_atom);
+
+    TEST(test_parse);
 }

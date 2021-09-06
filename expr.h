@@ -72,4 +72,8 @@ typedef struct expr {
     } value;
 } expr;
 
+void print_expr(expr *e);
+
+bool is_valid(expr *e);
+
 #endif
