@@ -117,7 +117,7 @@ void test_parse_atom() {
 }
 
 void test_op_chunk() {
-    op_chunk *o = new_op_chunk();
+    op_chunk *o = new_op_chunk(0);
     for (int i = 0; i < 1000; ++i)
         add_op(o, RETURN_OP);
     for (int i = 0; i < 1000; ++i)
@@ -141,9 +141,18 @@ void test() {
 }
 
 int main() {
-    op_chunk *o = new_op_chunk();
-    add_op(o, RETURN_OP);
+    test();
+
+    op_chunk *o = new_op_chunk(32);
+    o -> constants -> boolean.b = 0;
+    o -> constants[1].boolean.b = 1;
+
+    add_op(o, LOAD_CONST_OP);
+    add_op(o, 0);
+    add_op(o, LOAD_CONST_OP);
+    add_op(o, 1);
     add_op(o, RETURN_OP);
 
     disassembleOpChunk(o);
+
 }
