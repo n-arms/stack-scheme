@@ -6,6 +6,10 @@
 
 #define RETURN_OP ((uint8_t) 0)
 #define LOAD_CONST_OP ((uint8_t) 1)
+#define ADD_OP ((uint8_t) 2)
+#define SUB_OP ((uint8_t) 3)
+#define DIV_OP ((uint8_t) 4)
+#define MUL_OP ((uint8_t) 5)
 
 union stack_object;
 

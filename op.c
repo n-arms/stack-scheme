@@ -52,6 +52,18 @@ int disassembleOp(op_chunk *c, int i) {
         print_stack_object(c -> constants + c -> data[i + 1]);
         printf("\n");
         return i + 2;
+    case ADD_OP:
+        printf("ADD\n");
+        return i + 1;
+    case MUL_OP:
+        printf("MUL\n");
+        return i + 1;
+    case DIV_OP:
+        printf("DIV\n");
+        return i + 1;
+    case SUB_OP:
+        printf("SUB\n");
+        return i + 1;
     default:
         fprintf(stderr, "unknown instruction %d\n", c -> data[i]);
         exit(1);

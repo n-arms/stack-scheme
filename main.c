@@ -151,8 +151,8 @@ int main() {
     add_op(o, 0);
     add_op(o, LOAD_CONST_OP);
     add_op(o, 1);
+    add_op(o, ADD_OP);
     add_op(o, RETURN_OP);
 
     disassembleOpChunk(o);
-
 }
