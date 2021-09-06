@@ -1,5 +1,6 @@
 #include "expr.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 token_buffer *new_token_buffer() {
     token_buffer *tb = malloc(sizeof(token_buffer));
@@ -19,4 +20,33 @@ void extend_token_buffer(token_buffer *tb) {
         tb -> capacity *= 2;
     }
     ++ tb -> size;
+}
+
+void print_token(token *t) {
+    switch (t -> tag) {
+    case TOKEN_LPAR:
+        printf("(");
+    case TOKEN_RPAR:
+        printf(")");
+    case TOKEN_TRUE:
+        printf("#t");
+    case TOKEN_FALSE:
+        printf("#f");
+    case TOKEN_NUMBER:
+        printf("%f", t -> value.number.d);
+    case TOKEN_STRING:
+        printf("%s", t -> value.string.s);
+    case TOKEN_SYMBOL:
+        printf("%s", t -> value.symbol.s);
+    case TOKEN_QUOTE:
+        printf("'");
+    }
+}
+
+void print_tokens(token_buffer *tb) {
+    for (int i = 0; i < tb -> size; ++i) {
+        print_token(tb -> buffer + i);
+        printf(" ");
+    }
+    printf("\n");
 }

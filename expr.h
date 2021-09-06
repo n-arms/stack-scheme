@@ -8,7 +8,8 @@ typedef enum {
     TOKEN_TRUE,
     TOKEN_FALSE,
     TOKEN_STRING,
-    TOKEN_SYMBOL
+    TOKEN_SYMBOL,
+    TOKEN_QUOTE
 } token_tag;
 
 typedef struct {
@@ -35,5 +36,8 @@ typedef struct {
 
 token_buffer *new_token_buffer();
 void extend_token_buffer(token_buffer *tb);
+
+void print_token(token *t);
+void print_tokens(token_buffer *tb);
 
 #endif
