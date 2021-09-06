@@ -4,12 +4,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define RETURN_OP ((uint8_t) 0)
-#define LOAD_CONST_OP ((uint8_t) 1)
-#define ADD_OP ((uint8_t) 2)
-#define SUB_OP ((uint8_t) 3)
-#define DIV_OP ((uint8_t) 4)
-#define MUL_OP ((uint8_t) 5)
+#define RETURN_OP ((uint8_t) 0) // return from a function call
+#define LOAD_CONST_OP ((uint8_t) 1) // push a pointer to a stack object onto the stack
+#define ADD_OP ((uint8_t) 2) // add the top 2 elements on the stack
+#define SUB_OP ((uint8_t) 3) // subtract the top 2 elements on the stack
+#define DIV_OP ((uint8_t) 4) // divide the top 2 elements on the stack
+#define MUL_OP ((uint8_t) 5) // multiply the top 2 elements on the stack
 
 union stack_object;
 
@@ -51,8 +51,16 @@ typedef struct heap_object {
         struct {
             char *s;
         } symbol;
+        struct {
+            int length;
+            stack_object *values;
+        } cons;
     } value;
     char object_type;
 } heap_object;
+
+#define STRING_OBJ ((uint8_t) 0)
+#define SYMBOL_OBJ ((uint8_t) 1)
+#define LIST_OBJ ((uint8_t) 2)
 
 #endif

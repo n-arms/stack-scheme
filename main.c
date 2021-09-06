@@ -7,6 +7,7 @@
 #include "parser.h"
 #include "op.h"
 #include "check.h"
+#include "compiler.h"
 
 #define TEST(f) \
     fprintf(stderr, "\nrunning " #f "\n\e[0;31m"); \
@@ -153,6 +154,32 @@ void test_expr_validation() {
     assert(validate(e));
 }
 
+void test_atomic_compiler() {
+    op_chunk *o;
+
+    o = compile(parse_expr(scan("42")), 32);
+    assert(o -> size == 1);
+    assert(o -> data[0] == LOAD_CONST_OP);
+    assert(o -> constants[0].number.d == 42);
+
+    o = compile(parse_expr(scan("#t")), 32);
+    assert(o -> size == 1);
+    assert(o -> data[0] == LOAD_CONST_OP);
+    assert(o -> constants[0].boolean.b == true);
+
+    o = compile(parse_expr(scan("abc")), 32);
+    assert(o -> size == 1);
+    assert(o -> data[0] == LOAD_CONST_OP);
+    assert(o -> constants[0].heap_ref.ref -> object_type == SYMBOL_OBJ);
+    assert(strcmp(o -> constants[0].heap_ref.ref -> value.symbol.s, "abc") == 0);
+
+    o = compile(parse_expr(scan("\"do re mi\"")), 32);
+    assert(o -> size == 1);
+    assert(o -> data[0] == LOAD_CONST_OP);
+    assert(o -> constants[0].heap_ref.ref -> object_type == STRING_OBJ);
+    assert(strcmp(o -> constants[0].heap_ref.ref -> value.string.s, "do re mi") == 0);
+}
+
 void test() {
     atexit(cleanup);
 
@@ -173,17 +200,4 @@ void test() {
 
 int main() {
     test();
-
-    op_chunk *o = new_op_chunk(32);
-    o -> constants -> boolean.b = 0;
-    o -> constants[1].boolean.b = 1;
-
-    add_op(o, LOAD_CONST_OP);
-    add_op(o, 0);
-    add_op(o, LOAD_CONST_OP);
-    add_op(o, 1);
-    add_op(o, ADD_OP);
-    add_op(o, RETURN_OP);
-
-    disassembleOpChunk(o);
 }
