@@ -1,14 +1,14 @@
 run: a.out
 	./a.out
 
-a.out: main.o expr.o lexer.o
-	gcc main.o expr.o lexer.o
-
-main.o: main.c
-	gcc -c main.c
+a.out: main.c expr.o lexer.o parser.o
+	gcc main.c expr.o lexer.o parser.o
 
 expr.o: expr.c expr.h
 	gcc -c expr.c
 
 lexer.o: lexer.c lexer.h
 	gcc -c lexer.c
+
+parser.o: parser.c parser.h
+	gcc -c parser.c

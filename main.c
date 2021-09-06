@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 #include "expr.h"
 #include "lexer.h"
+#include "parser.h"
 
 #define TEST(f) \
     fprintf(stderr, "\nrunning " #f "\n\e[0;31m"); \
@@ -73,6 +75,36 @@ void test_full_scan() {
     tb = scan("(abc #t (\"123\" (0.25 #f ())))");
 }
 
+void test_parse_atom() {
+    token_buffer *tb;
+    expr *e;
+
+    tb = scan("123");
+    e = parse_expr(tb);
+    assert(e -> tag == NUMBER);
+    assert(e -> value.number.d == 123);
+
+    tb = scan("abc");
+    e = parse_expr(tb);
+    assert(e -> tag == SYMBOL);
+    assert(!strcmp(e -> value.symbol.s, "abc"));
+
+    tb = scan("\"abc\"");
+    e = parse_expr(tb);
+    assert(e -> tag == STRING);
+    assert(!strcmp(e -> value.string.s, "abc"));
+
+    tb = scan("#t");
+    e = parse_expr(tb);
+    assert(e -> tag == BOOLEAN);
+    assert(e -> value.boolean.b);
+    
+    tb = scan("#f");
+    e = parse_expr(tb);
+    assert(e -> tag == BOOLEAN);
+    assert(!e -> value.boolean.b);
+}
+
 int main() {
     atexit(cleanup);
 
@@ -81,4 +113,6 @@ int main() {
     TEST(test_single_token);
 
     TEST(test_full_scan);
+
+    TEST(test_parse_atom);
 }

@@ -1,6 +1,8 @@
 #ifndef EXPR_H_
 #define EXPR_H_
 
+#include <stdbool.h>
+
 typedef enum {
     TOKEN_NUMBER,
     TOKEN_LPAR,
@@ -39,5 +41,35 @@ void extend_token_buffer(token_buffer *tb);
 
 void print_token(token *t);
 void print_tokens(token_buffer *tb);
+
+typedef enum {
+    NUMBER,
+    SYMBOL,
+    STRING,
+    CONS,
+    BOOLEAN
+} expr_tag;
+
+typedef struct expr {
+    expr_tag tag;
+    union {
+        struct {
+            double d;
+        } number;
+        struct {
+            char *s;
+        } symbol;
+        struct {
+            char *s;
+        } string;
+        struct {
+            struct expr *values;
+            int length;
+        } cons;
+        struct {
+            bool b;
+        } boolean;
+    } value;
+} expr;
 
 #endif
