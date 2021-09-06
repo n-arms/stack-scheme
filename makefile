@@ -1,8 +1,8 @@
 run: a.out
 	./a.out
 
-a.out: main.c expr.o lexer.o parser.o op.o
-	gcc main.c expr.o lexer.o parser.o op.o
+a.out: main.c expr.o lexer.o parser.o op.o check.o
+	gcc main.c expr.o lexer.o parser.o op.o check.o
 
 expr.o: expr.c expr.h
 	gcc -c expr.c
@@ -15,3 +15,6 @@ parser.o: parser.c parser.h
 
 op.o: op.c op.h
 	gcc -c op.c
+
+check.o: check.c check.h
+	gcc -c check.c

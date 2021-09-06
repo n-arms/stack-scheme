@@ -6,6 +6,7 @@
 #include "lexer.h"
 #include "parser.h"
 #include "op.h"
+#include "check.h"
 
 #define TEST(f) \
     fprintf(stderr, "\nrunning " #f "\n\e[0;31m"); \
@@ -124,6 +125,46 @@ void test_op_chunk() {
         assert(o -> data[i] == RETURN_OP);
 }
 
+void test_expr_validation() {
+    expr *e;
+    
+    e = parse_expr(scan("#t"));
+    assert(validate(e));
+
+    e = parse_expr(scan("123"));
+    assert(validate(e));
+
+    e = parse_expr(scan("\"abc\""));
+    assert(validate(e));
+
+    e = parse_expr(scan("(if #t 1 2)"));
+    assert(validate(e));
+
+    e = parse_expr(scan("(define a 4)"));
+    assert(validate(e));
+
+    e = parse_expr(scan("(set! a 5)"));
+    assert(validate(e));
+
+    e = parse_expr(scan("'5"));
+    assert(validate(e));
+
+    e = parse_expr(scan("(quote 5)"));
+    assert(validate(e));
+
+    e = parse_expr(scan("(abc 123)"));
+    assert(!validate(e));
+
+    token_buffer *tb = scan("(abc)");
+    e = parse_expr(tb);
+
+    e = parse_expr(scan("(abc)"));
+    assert(!validate(e));
+
+    e = parse_expr(scan("()"));
+    assert(!validate(e));
+}
+
 void test() {
     atexit(cleanup);
 
@@ -138,6 +179,8 @@ void test() {
     TEST(test_parse);
 
     TEST(test_op_chunk);
+
+    TEST(test_expr_validation);
 }
 
 int main() {

@@ -84,7 +84,12 @@ loop:
         } else {
             int i;
             char *buffer = malloc(sizeof(char) * (STRING_BUFFER + 1));
-            for (i = 0; text[counter + i] != ' ' && text[counter + i] != '\n' && text[counter + i] != '\0'; ++i) {
+            for (i = 0; 
+                    text[counter + i] != ' ' && 
+                    text[counter + i] != '\n' && 
+                    text[counter + i] != '\0' &&
+                    text[counter + i] != '(' &&
+                    text[counter + i] != ')'; ++i) {
                 buffer[i] = text[counter + i];
             }
             counter += i;

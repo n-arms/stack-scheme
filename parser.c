@@ -68,7 +68,7 @@ expr *parse_expr(token_buffer *tb) {
         if (!contents)
             contents = parse_atom(tb);
         if (!contents) return NULL;
-        result -> value.cons.values[1] = *result;
+        result -> value.cons.values[1] = *contents;
         return result;
     } else {
         expr *result = parse_list(tb);
