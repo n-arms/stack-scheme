@@ -5,6 +5,7 @@
 #include "expr.h"
 #include "lexer.h"
 #include "parser.h"
+#include "op.h"
 
 #define TEST(f) \
     fprintf(stderr, "\nrunning " #f "\n\e[0;31m"); \
@@ -115,7 +116,15 @@ void test_parse_atom() {
     assert(!e -> value.boolean.b);
 }
 
-int main() {
+void test_op_chunk() {
+    op_chunk *o = new_op_chunk();
+    for (int i = 0; i < 1000; ++i)
+        add_op(o, RETURN_OP);
+    for (int i = 0; i < 1000; ++i)
+        assert(o -> data[i] == RETURN_OP);
+}
+
+void test() {
     atexit(cleanup);
 
     TEST(test_token_buffer);
@@ -127,4 +136,14 @@ int main() {
     TEST(test_parse_atom);
 
     TEST(test_parse);
+
+    TEST(test_op_chunk);
+}
+
+int main() {
+    op_chunk *o = new_op_chunk();
+    add_op(o, RETURN_OP);
+    add_op(o, RETURN_OP);
+
+    disassembleOpChunk(o);
 }
