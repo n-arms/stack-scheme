@@ -151,18 +151,6 @@ void test_expr_validation() {
 
     e = parse_expr(scan("(quote 5)"));
     assert(validate(e));
-
-    e = parse_expr(scan("(abc 123)"));
-    assert(!validate(e));
-
-    token_buffer *tb = scan("(abc)");
-    e = parse_expr(tb);
-
-    e = parse_expr(scan("(abc)"));
-    assert(!validate(e));
-
-    e = parse_expr(scan("()"));
-    assert(!validate(e));
 }
 
 void test() {
