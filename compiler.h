@@ -4,6 +4,6 @@
 #include "op.h"
 #include "expr.h"
 
-op_chunk *compile(expr *e, int const_max);
+void compile(expr *e, op_chunk *target);
 
 #endif

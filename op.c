@@ -2,12 +2,33 @@
 #include <stdlib.h>
 #include "op.h"
 
-op_chunk *new_op_chunk(int const_max) {
+const_array *new_const_array() {
+    const_array *result = malloc(sizeof(const_array));
+    result -> size = 0;
+    result -> capacity = 1;
+    result -> constants = malloc(sizeof(stack_object));
+    return result;
+}
+
+void add_const(const_array *c, stack_object o) {
+    if (c -> size == c -> capacity) {
+        c -> capacity *= 2;
+        stack_object *new_data = malloc(sizeof(stack_object) * c -> capacity);
+        for (int i = 0; i < c -> size; ++i)
+            new_data[i] = c -> constants[i];
+        free(c -> constants);
+        c -> constants = new_data;
+    }
+    c -> constants[c -> size] = o;
+    ++ c -> size;
+}
+
+op_chunk *new_op_chunk() {
     op_chunk *result = malloc(sizeof(op_chunk));
     result -> capacity = 1;
     result -> size = 0;
     result -> data = malloc(sizeof(uint8_t));
-    result -> constants = malloc(sizeof(stack_object) * const_max);
+    result -> constants = new_const_array();
     return result;
 }
 
@@ -30,6 +51,7 @@ union so_bytes {
 };
 
 void print_stack_object(stack_object *so) {
+    /*
     union so_bytes bytes;
     bytes.so = *so;
     for (int i = sizeof(uint64_t) * 8 - 1; i >= 0; --i) {
@@ -37,7 +59,8 @@ void print_stack_object(stack_object *so) {
             printf("1");
         else
             printf("0");
-    }
+    }*/
+    printf("%f", so -> number.d);
 }
 
 int disassembleOp(op_chunk *c, int i) {
@@ -49,7 +72,7 @@ int disassembleOp(op_chunk *c, int i) {
         return i + 1;
     case LOAD_CONST_OP:
         printf("LOAD_CONST ");
-        print_stack_object(c -> constants + c -> data[i + 1]);
+        print_stack_object(c -> constants -> constants + c -> data[i + 1]);
         printf("\n");
         return i + 2;
     case ADD_OP:

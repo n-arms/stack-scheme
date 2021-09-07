@@ -65,7 +65,7 @@ loop:
         tb -> index = 0;
         return tb;
     default:
-        if (text[counter] == '-' || isdigit(text[counter])) {
+        if ((text[counter] == '-' && isdigit(text[counter + 1])) || isdigit(text[counter])) {
             int i;
             char *buffer = malloc(sizeof(char) * (STRING_BUFFER + 1));
             for (i = 0; (
