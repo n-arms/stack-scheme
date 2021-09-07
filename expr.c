@@ -50,6 +50,9 @@ void print_token(token *t) {
     case TOKEN_QUOTE:
         printf("'");
         break;
+    case TOKEN_DOT:
+        printf(".");
+        break;
     }
 }
 
@@ -62,12 +65,10 @@ void print_tokens(token_buffer *tb) {
 
 bool is_valid(expr *e) {
     if (!e) return false;
-    bool result = true;
-    if (e -> tag == CONS) {
-        for (int i = 0; i < e -> value.cons.length; ++i)
-            result &= is_valid(e -> value.cons.values + i);
+    if (e -> tag == PAIR) {
+        return is_valid(e -> value.pair.car) && is_valid(e -> value.pair.cdr);
     }
-    return result;
+    return true;
 }
 
 void print_expr(expr *e) {
@@ -89,13 +90,16 @@ void print_expr(expr *e) {
     case STRING:
         printf("\"%s\"", e -> value.string.s);
         break;
-    case CONS:
+    case PAIR:
         printf("( ");
-        for (int i = 0; i < e -> value.cons.length; ++i) {
-            print_expr(e -> value.cons.values + i);
-            printf(" ");
-        }
+        print_expr(e -> value.pair.car);
+        printf(" . ");
+        print_expr(e -> value.pair.cdr);
         printf(")");
         break;
+    case CHAR:
+        printf("%c", e -> value.character.c);
+    case NIL:
+        printf("()");
     }
 }

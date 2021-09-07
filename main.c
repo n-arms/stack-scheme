@@ -83,10 +83,8 @@ void test_parse() {
     token_buffer *tb;
     expr *e;
 
-    tb = scan("( 123 abc #t () \"one two three\" )");
+    tb = scan("(1 2 3)");
     e = parse_expr(tb);
-    print_expr(e);
-    printf("\n");
 }
 
 void test_parse_atom() {
@@ -129,7 +127,7 @@ void test_op_chunk() {
 
 void test_expr_validation() {
     expr *e;
-    
+   /* 
     e = parse_expr(scan("#t"));
     assert(validate(e));
 
@@ -153,6 +151,7 @@ void test_expr_validation() {
 
     e = parse_expr(scan("(quote 5)"));
     assert(validate(e));
+    */
 }
 
 void test_atomic_compiler() {
@@ -187,12 +186,8 @@ void test_atomic_compiler() {
     compile(parse_expr(scan("'a")), o);
     assert(o -> size == 2);
     assert(o -> data[0] == LOAD_CONST_OP);
-    assert(o -> constants -> constants[0].heap_ref.ref -> object_type == LIST_OBJ);
-    assert(o -> constants -> constants[0].heap_ref.ref -> value.cons.length == 2);
-    assert(o -> constants -> constants[0].heap_ref.ref -> value.cons.values -> heap_ref.ref -> object_type == SYMBOL_OBJ);
-    assert(o -> constants -> constants[0].heap_ref.ref -> value.cons.values[1].heap_ref.ref -> object_type == SYMBOL_OBJ);
-    assert(strcmp(o -> constants -> constants[0].heap_ref.ref -> value.cons.values -> heap_ref.ref -> value.symbol.s, "quote") == 0);
-    assert(strcmp(o -> constants -> constants[0].heap_ref.ref -> value.cons.values[1].heap_ref.ref -> value.symbol.s, "a") == 0);
+    assert(o -> constants -> constants[0].heap_ref.ref -> object_type == SYMBOL_OBJ);
+    assert(strcmp(o -> constants -> constants[0].heap_ref.ref -> value.symbol.s, "a") == 0);
 
     o = new_op_chunk();
     compile(parse_expr(scan("(/ 1 2)")), o);
@@ -253,7 +248,7 @@ void test_atomic_compiler() {
     assert(o -> constants -> size == 2);
     assert(fabs(o -> constants -> constants[0].number.d) < 0.00001);
     assert(fabs(o -> constants -> constants[1].number.d - 1.0) < 0.0001);
-    
+
     o = new_op_chunk();
     compile(parse_expr(scan("(- 1 2)")), o);
     assert(o -> size == 5);
@@ -264,7 +259,7 @@ void test_atomic_compiler() {
     assert(o -> data[4] == SUB_OP);
     assert(o -> constants -> size == 2);
     assert(fabs(o -> constants -> constants[0].number.d - 1.0) < 0.00001);
-    assert(fabs(o -> constants -> constants[1].number.d - 2.0) < 0.0001);
+    assert(fabs(o -> constants -> constants[1].number.d - 2.0) < 0.00001);
 }
 
 void test() {

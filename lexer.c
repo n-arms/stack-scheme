@@ -20,6 +20,11 @@ loop:
         tb -> buffer[tb -> size - 1].tag = TOKEN_RPAR;
         ++counter;
         goto loop;
+    case '.':
+        extend_token_buffer(tb);
+        tb -> buffer[tb -> size - 1].tag = TOKEN_DOT;
+        ++counter;
+        goto loop;
     case '\'':
         extend_token_buffer(tb);
         tb -> buffer[tb -> size - 1].tag = TOKEN_QUOTE;

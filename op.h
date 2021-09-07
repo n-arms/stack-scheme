@@ -51,6 +51,9 @@ typedef union stack_object {
         bool b;
     } boolean;
     struct {
+        char c;
+    } character;
+    struct {
         struct heap_object *ref;
     } heap_ref;
 } stack_object;
@@ -65,15 +68,15 @@ typedef struct heap_object {
             char *s;
         } symbol;
         struct {
-            int length;
-            stack_object *values;
-        } cons;
+            stack_object *car;
+            stack_object *cdr;
+        } pair;
     } value;
     char object_type;
 } heap_object;
 
 #define STRING_OBJ ((uint8_t) 0)
 #define SYMBOL_OBJ ((uint8_t) 1)
-#define LIST_OBJ ((uint8_t) 2)
+#define PAIR_OBJ ((uint8_t) 2)
 
 #endif

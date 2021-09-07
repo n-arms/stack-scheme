@@ -12,15 +12,29 @@ void insert(op_chunk *a, op_chunk *b) {
         add_const(a -> constants, b -> constants -> constants[i]);
 }*/
 
+bool is_valid_list(expr *e) {
+    return 
+        e -> tag == PAIR &&
+        (e -> value.pair.cdr -> tag == NIL ||
+         is_valid_list(e -> value.pair.cdr));
+}
+
 bool operator_is(expr *e, char *s) {
-    assert(e -> tag == CONS);
-    assert(e -> value.cons.values -> tag == SYMBOL);
-    return strcmp(e -> value.cons.values -> value.symbol.s, s) == 0;
+    assert(is_valid_list(e));
+    assert(e -> value.pair.car -> tag == SYMBOL);
+    return strcmp(e -> value.pair.car -> value.symbol.s, s) == 0;
 }
 
 int num_operands(expr *e) {
-    assert(e -> tag == CONS);
-    return e -> value.cons.length;
+    assert(is_valid_list(e));
+    if (e -> value.pair.cdr -> tag == NIL) return 1;
+    return 1 + num_operands(e -> value.pair.cdr);
+}
+
+expr *get_at(expr *e, int index) {
+    assert(is_valid_list(e));
+    if (index == 0) return e -> value.pair.car;
+    return get_at(e -> value.pair.cdr, index - 1);
 }
 
 stack_object compile_number(expr *e) {
@@ -54,9 +68,21 @@ stack_object compile_string(expr *e) {
     return str;
 }
 
+stack_object compile_nil(expr *e) {
+    assert(e -> tag == NIL);
+    return (stack_object){};
+}
+
+stack_object compile_char(expr *e) {
+    assert(e -> tag == CHAR);
+    stack_object character;
+    character.character.c = e -> value.character.c;
+    return character;
+}
+
 stack_object compile_quoted(expr *e);
-stack_object compile_list(expr *e) {
-    assert(e -> tag == CONS);
+stack_object compile_quoted_pair(expr *e) {
+    /*
     stack_object list;
     list.heap_ref.ref = malloc(sizeof(heap_object));
     list.heap_ref.ref -> object_type = LIST_OBJ;
@@ -64,6 +90,15 @@ stack_object compile_list(expr *e) {
     list.heap_ref.ref -> value.cons.values = malloc(sizeof(stack_object) * e -> value.cons.length);
     for (int i = 0; i < e -> value.cons.length; ++i)
         list.heap_ref.ref -> value.cons.values[i] = compile_quoted(e -> value.cons.values + i);
+    return list;
+    */
+    stack_object list;
+    list.heap_ref.ref = malloc(sizeof(heap_object));
+    list.heap_ref.ref -> object_type = PAIR_OBJ;
+    list.heap_ref.ref -> value.pair.car = malloc(sizeof(stack_object));
+    list.heap_ref.ref -> value.pair.car[0] = compile_quoted(e -> value.pair.car);
+    list.heap_ref.ref -> value.pair.cdr = malloc(sizeof(stack_object));
+    list.heap_ref.ref -> value.pair.cdr[0] = compile_quoted(e -> value.pair.car);
     return list;
 }
 
@@ -77,8 +112,12 @@ stack_object compile_quoted(expr *e) {
         return compile_string(e);
     case SYMBOL:
         return compile_symbol(e);
-    case CONS:
-        return compile_list(e);
+    case CHAR:
+        return compile_char(e);
+    case NIL:
+        return compile_nil(e);
+    case PAIR:
+        return compile_quoted_pair(e);
     }
 }
 
@@ -89,10 +128,9 @@ void load_const(stack_object o, op_chunk *target) {
 }
 
 void compile_if(expr *e, op_chunk *target) {
-    assert(e -> tag == CONS);
-    assert(e -> value.cons.length == 4);
-    assert(e -> value.cons.values -> tag == SYMBOL);
-    assert(strcmp(e -> value.cons.values -> value.symbol.s, "if") == 0);
+    assert(num_operands(e) == 4);
+    assert(e -> value.pair.car -> tag == SYMBOL);
+    assert(strcmp(e -> value.pair.car -> value.symbol.s, "if") == 0);
 }
 
 void compile(expr *e, op_chunk *target) {
@@ -111,44 +149,35 @@ tailcall:
         return load_const(compile_symbol(e), target);
     case STRING:
         return load_const(compile_string(e), target);
-    case CONS:
-        if (e -> value.cons.length == 0) {
-            printf("cannot evaluate the empty list\n");
-            return;
-        }
-        if (e -> value.cons.values -> tag != SYMBOL) {
+    case NIL:
+        printf("cannot eval the empyt list\n");
+        exit(1);
+    case PAIR:
+        if (e -> value.pair.car -> tag != SYMBOL) {
             printf("not yet implemented higher order functions\n");
             exit(1);
         }
-        /*
-        if (strcmp(e -> value.cons.values -> value.symbol.s, "quote") == 0) {
-            return load_const(compile_quoted(e), target);
-        } else if (strcmp(e -> value.cons.values -> value.symbol.s, "if") == 0) {
-        } else if (strcmp(e -> value.cons.values -> value.symbol.s, "define") == 0) {
-        } else if (strcmp(e -> value.cons.values -> value.symbol.s, "set!") == 0) {
-        } else {
-        }*/
         if (operator_is(e, "quote") && num_operands(e) == 2) {
-            return load_const(compile_quoted(e), target);
+            return load_const(compile_quoted(e -> value.pair.cdr -> value.pair.car), target);
         } else if (operator_is(e, "if") && num_operands(e) == 4) {
             return compile_if(e, target);
         } else if (operator_is(e, "define") && num_operands(e) == 3) {
         } else if (operator_is(e, "set!") && num_operands(e) == 3) {
         } else if (operator_is(e, "/") && num_operands(e) == 3) {
-            compile(e -> value.cons.values + 1, target);
-            compile(e -> value.cons.values + 2, target);
+            compile(e -> value.pair.cdr -> value.pair.car, target);
+            compile(e -> value.pair.cdr -> value.pair.cdr -> value.pair.car, target);
             return add_op(target, DIV_OP);
         } else if (operator_is(e, "+")) {
             load_const((stack_object){{0.0}}, target);
             for (int i = 1; i < num_operands(e); ++i) {
-                compile(e -> value.cons.values + i, target);
+                compile(get_at(e, i), target);
                 add_op(target, ADD_OP);
             }
             return;
         } else if (operator_is(e, "*")) {
             load_const((stack_object){{1.0}}, target);
             for (int i = 1; i < num_operands(e); ++i) {
-                compile(e -> value.cons.values + i, target);
+                compile(get_at(e, i), target);
                 add_op(target, MUL_OP);
             }
             return;
@@ -157,12 +186,12 @@ tailcall:
                 fprintf(stderr, "cannot apply - to 0 operands");
             } else if (num_operands(e) == 2) {
                 load_const((stack_object){{0.0}}, target);
-                compile(e -> value.cons.values + 1, target);
+                compile(e -> value.pair.cdr -> value.pair.car, target);
                 add_op(target, SUB_OP);
             } else {
-                compile(e -> value.cons.values + 1, target);
+                compile(e -> value.pair.cdr -> value.pair.car, target);
                 for (int i = 2; i < num_operands(e); ++i) {
-                    compile(e -> value.cons.values + i, target);
+                    compile(get_at(e, i), target);
                     add_op(target, SUB_OP);
                 }
             }

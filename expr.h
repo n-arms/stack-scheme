@@ -11,7 +11,8 @@ typedef enum {
     TOKEN_FALSE,
     TOKEN_STRING,
     TOKEN_SYMBOL,
-    TOKEN_QUOTE
+    TOKEN_QUOTE,
+    TOKEN_DOT
 } token_tag;
 
 typedef struct {
@@ -46,8 +47,10 @@ typedef enum {
     NUMBER,
     SYMBOL,
     STRING,
-    CONS,
-    BOOLEAN
+    PAIR,
+    CHAR,
+    BOOLEAN,
+    NIL
 } expr_tag;
 
 typedef struct expr {
@@ -63,9 +66,12 @@ typedef struct expr {
             char *s;
         } string;
         struct {
-            struct expr *values;
-            int length;
-        } cons;
+            struct expr *car;
+            struct expr *cdr;
+        } pair;
+        struct {
+            char c;
+        } character;
         struct {
             bool b;
         } boolean;
