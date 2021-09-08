@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "op.h"
+#include "compiler.h"
 
 const_array *new_const_array() {
     const_array *result = malloc(sizeof(const_array));
@@ -23,6 +25,7 @@ void add_const(const_array *c, stack_object o) {
     ++ c -> size;
 }
 
+
 op_chunk *new_op_chunk() {
     op_chunk *result = malloc(sizeof(op_chunk));
     result -> capacity = 1;
@@ -43,6 +46,13 @@ void add_op(op_chunk *c, uint8_t op) {
     }
     c -> data[c -> size] = op;
     ++ c -> size;
+
+}
+
+void set_op(op_chunk *c, uint8_t op, int index) {
+    assert(index < c -> size);
+    c -> data[index] = op;
+
 }
 
 union so_bytes {
@@ -51,7 +61,6 @@ union so_bytes {
 };
 
 void print_stack_object(stack_object *so) {
-    /*
     union so_bytes bytes;
     bytes.so = *so;
     for (int i = sizeof(uint64_t) * 8 - 1; i >= 0; --i) {
@@ -59,8 +68,8 @@ void print_stack_object(stack_object *so) {
             printf("1");
         else
             printf("0");
-    }*/
-    printf("%f", so -> number.d);
+    }
+    // printf("%f", so -> number.d);
 }
 
 int disassembleOp(op_chunk *c, int i) {
@@ -86,6 +95,36 @@ int disassembleOp(op_chunk *c, int i) {
         return i + 1;
     case SUB_OP:
         printf("SUB\n");
+        return i + 1;
+    case LOAD_TRUE_OP:
+        printf("LOAD_TRUE\n");
+        return i + 1;
+    case LOAD_FALSE_OP:
+        printf("LOAD_FALSE\n");
+        return i + 1;
+    case JMP_OP:
+        {
+            uint64_t target = c -> data[i + 1] << 24;
+            target += ((uint64_t) c -> data[i + 2]) << 16;
+            target += ((uint64_t) c -> data[i + 3]) << 8;
+            target += ((uint64_t) c -> data[i + 4]);
+            printf("JMP %d\n", (int) target);
+        }
+        return i + 5;
+    case JMP_IF_OP:
+        {
+            uint64_t target = c -> data[i + 1] << 24;
+            target += ((uint64_t) c -> data[i + 2]) << 16;
+            target += ((uint64_t) c -> data[i + 3]) << 8;
+            target += ((uint64_t) c -> data[i + 4]);
+            printf("JMP IF %d\n", (int) target);
+        }
+        return i + 5;
+    case POP_OP:
+        printf("POP\n");
+        return i + 1;
+    case NO_OP:
+        printf("NO_OP\n");
         return i + 1;
     default:
         fprintf(stderr, "unknown instruction %d\n", c -> data[i]);

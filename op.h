@@ -10,8 +10,12 @@
 #define SUB_OP ((uint8_t) 3) // subtract the top 2 elements on the stack
 #define DIV_OP ((uint8_t) 4) // divide the top 2 elements on the stack
 #define MUL_OP ((uint8_t) 5) // multiply the top 2 elements on the stack
-#define LOAD_TRUE_OP ((uint8_t) 6)
-#define LOAD_FALSE_OP ((uint8_t) 7)
+#define LOAD_TRUE_OP ((uint8_t) 6) // load the value true
+#define LOAD_FALSE_OP ((uint8_t) 7) // load the value false
+#define JMP_OP ((uint8_t) 8) // set the IP to the next 4 bytes of the instruction array
+#define JMP_IF_OP ((uint8_t) 9) // if pop(), set the IP to the next 4 bytes of the instruction array
+#define POP_OP ((uint8_t) 10) // pop the top value of the stack
+#define NO_OP ((uint8_t) 11) // do nothing
 
 union stack_object;
 
@@ -35,6 +39,7 @@ typedef struct {
 
 op_chunk *new_op_chunk();
 void add_op(op_chunk *c, uint8_t op);
+void set_op(op_chunk *c, uint8_t op, int index);
 
 void print_stack_object(union stack_object *s);
 int disassembleOp(op_chunk* c, int i);

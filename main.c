@@ -127,7 +127,7 @@ void test_op_chunk() {
 
 void test_expr_validation() {
     expr *e;
-   /* 
+
     e = parse_expr(scan("#t"));
     assert(validate(e));
 
@@ -151,7 +151,6 @@ void test_expr_validation() {
 
     e = parse_expr(scan("(quote 5)"));
     assert(validate(e));
-    */
 }
 
 void test_atomic_compiler() {
@@ -260,6 +259,19 @@ void test_atomic_compiler() {
     assert(o -> constants -> size == 2);
     assert(fabs(o -> constants -> constants[0].number.d - 1.0) < 0.00001);
     assert(fabs(o -> constants -> constants[1].number.d - 2.0) < 0.00001);
+}
+
+void test_int_to_bytes() {
+    uint8_t *bytes;
+    for (int i = 0; i < 2000000; ++i) {
+        bytes = to_bytes(i);
+        assert(
+                (((uint8_t) bytes[3])) + 
+                (((uint8_t) bytes[2]) << 8) + 
+                (((uint8_t) bytes[1]) << 16) + 
+                (((uint8_t) bytes[0]) << 24) 
+                == i);
+    }
 }
 
 void test() {

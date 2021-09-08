@@ -127,10 +127,62 @@ void load_const(stack_object o, op_chunk *target) {
     add_op(target, target -> constants -> size - 1);
 }
 
+uint8_t *to_bytes(int i) {
+    uint8_t *bytes = malloc(sizeof(uint8_t) * 4);
+    bytes[0] = (uint8_t) (i >> 24);
+    bytes[1] = (uint8_t) (i >> 16);
+    bytes[2] = (uint8_t) (i >> 8);
+    bytes[3] = (uint8_t) i;
+    return bytes;
+}
+
+int from_bytes(uint8_t *bytes) {
+    return ((((int) bytes[0]) << 24) + (((int) bytes[1]) << 16) + (((int) bytes[2]) << 8) + ((int) bytes[3]));
+}
+
+/*
+ * (if p m n)
+ * 1. compile p // pushes true / false onto the stack
+ * 2. JMP_IF 5 // if p then jump to 5
+ * 3. compile n
+ * 4. JMP 6
+ * 5. compile m
+ * 6. NOP
+*/
 void compile_if(expr *e, op_chunk *target) {
     assert(num_operands(e) == 4);
     assert(e -> value.pair.car -> tag == SYMBOL);
     assert(strcmp(e -> value.pair.car -> value.symbol.s, "if") == 0);
+
+    compile(e -> value.pair.cdr -> value.pair.car, target); // 1
+
+    add_op(target, JMP_IF_OP);
+    int jmp_if_instr = target -> size;
+    for (int i = 0; i < 4; ++i)
+        add_op(target, (uint8_t) 0);
+
+    compile(e -> value.pair.cdr -> value.pair.cdr -> value.pair.cdr -> value.pair.car, target); // 3
+
+    add_op(target, JMP_OP);
+    int jmp_instr = target -> size;
+    for (int i = 0; i < 4; ++i)
+        add_op(target, (uint8_t) 0);
+
+    uint8_t *bytes = to_bytes(target -> size);
+    set_op(target, bytes[0], jmp_if_instr);
+    set_op(target, bytes[1], jmp_if_instr + 1);
+    set_op(target, bytes[2], jmp_if_instr + 2);
+    set_op(target, bytes[3], jmp_if_instr + 3);
+    
+    compile(e -> value.pair.cdr -> value.pair.cdr -> value.pair.car, target); // 5
+
+    uint8_t *bytes2 = to_bytes(target -> size);
+    set_op(target, bytes2[0], jmp_instr);
+    set_op(target, bytes2[1], jmp_instr + 1);
+    set_op(target, bytes2[2], jmp_instr + 2);
+    set_op(target, bytes2[3], jmp_instr + 3);
+
+    add_op(target, NO_OP);
 }
 
 void compile(expr *e, op_chunk *target) {
@@ -149,6 +201,8 @@ tailcall:
         return load_const(compile_symbol(e), target);
     case STRING:
         return load_const(compile_string(e), target);
+    case CHAR:
+        return load_const(compile_char(e), target);
     case NIL:
         printf("cannot eval the empyt list\n");
         exit(1);
